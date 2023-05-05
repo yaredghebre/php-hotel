@@ -41,7 +41,35 @@ $hotels = [
 ];
 
 
+// <!-- FUNZIONI PER I FILTRI -->
+
+$filtered_hotels = $hotels;
+if (isset($_GET["parking"]) && $_GET["parking"] === "1") {
+    $temp_hotels[] = $hotels;
+
+    foreach ($filtered_hotels as $hotel) {
+        if ($hotel["parking"]) {
+            $temp_hotels[] = $hotel;
+        }
+    }
+
+    $filtered_hotels = $temp_hotels;
+}
+
+if (isset($_GET["vote"]) && $_GET["vote"] !== "") {
+    $temp_hotels = [];
+    foreach($filtered_hotels as $hotel) {
+        if($hotel["vote"] >= $_GET["vote"]) {
+            $temp_hotels[] = $hotel;
+        }
+    }
+
+    $filtered_hotels = $temp_hotels;
+}
+
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,15 +84,21 @@ $hotels = [
 
 <body>
     <!-- FORM -->
-    <form class="mb-5 m-2" action="index.php" method="GET">
-        <label for="filter">Seleziona un filtro</label>
-        <select name="filter" id="filter">
-            <option value="">Tutti</option>
-            <option value="parking"> Con Parcheggio</option>
-            <option value="vote">Voto da 3 stelle in su</option>
-        </select>
-
-        <button type="submit">Invia</button>
+    <form action="index.php" method="GET">
+        <div class="d-flex align-items-end gap-2">
+            <div>
+                <label for="parking">Parcheggio</label>
+                <select name="parking" id="parking" class="form-select">
+                    <option value="">All</option>
+                    <option value="1" <?php echo(isset($_GET["parking"]) && $_GET["parking"] === "1") ? "selected" : "" ?>>Con Parcheggio</option>
+                </select>
+            </div>
+            <div>
+                <label for="vote">Voto</label>
+                <input type="number" id="vote" name="vote" class="form-control" max="5" min="1" value="<?php echo $_GET["vote"] ?? '' ?>">
+            </div>
+            <button type="submit" class="btn btn-primary">Cerca</button>
+        </div>
     </form>
 
     <!-- TABELLA -->
@@ -83,15 +117,7 @@ $hotels = [
             </thead>
 
             <tbody>
-                <?php foreach ($hotels as $index => $hotel) { 
-                    if ($_GET['filter'] === 'parking' && $hotel['parking'] !== true) {
-                        continue;
-                    };
-
-                    if ($_GET['filter'] === 'vote' && $hotel['vote'] <= 3) {
-                        continue;
-                    };
-                ?>
+                <?php foreach ($filtered_hotels as $index => $hotel) { ?>
                     <tr>
                         <th class="table-success" scope="row"><?php echo $index + 1; ?> </th>
                         <td class="table-info"><?php echo $hotel['name']; ?></td>
